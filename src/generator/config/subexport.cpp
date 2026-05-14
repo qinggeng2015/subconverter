@@ -29,6 +29,11 @@ const string_array clashr_protocols = {"origin", "auth_sha1_v4", "auth_aes128_md
 const string_array clashr_obfs = {"plain", "http_simple", "http_post", "random_head", "tls1.2_ticket_auth", "tls1.2_ticket_fastauth"};
 const string_array clash_ssr_ciphers = {"rc4-md5", "aes-128-ctr", "aes-192-ctr", "aes-256-ctr", "aes-128-cfb", "aes-192-cfb", "aes-256-cfb", "chacha20-ietf", "xchacha20", "none"};
 
+std::string quoteClashShortID(const std::string &content)
+{
+    return regReplace(content, R"((\bshort-id:\s*)(?!["'])([0-9A-Fa-f]+))", R"($1"$2")");
+}
+
 std::string vmessLinkConstruct(const std::string &remarks, const std::string &add, const std::string &port, const std::string &type, const std::string &id, const std::string &aid, const std::string &net, const std::string &path, const std::string &host, const std::string &tls)
 {
     rapidjson::StringBuffer sb;
@@ -843,7 +848,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     proxyToClash(nodes, yamlnode, extra_proxy_group, clashR, ext);
 
     if(ext.nodelist)
-        return YAML::Dump(yamlnode);
+        return quoteClashShortID(YAML::Dump(yamlnode));
 
     /*
     if(ext.enable_rule_generator)
@@ -852,7 +857,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     return YAML::Dump(yamlnode);
     */
     if(!ext.enable_rule_generator)
-        return YAML::Dump(yamlnode);
+        return quoteClashShortID(YAML::Dump(yamlnode));
 
     if(!ext.managed_config_prefix.empty() || ext.clash_script)
     {
@@ -865,7 +870,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
         }
 
         renderClashScript(yamlnode, ruleset_content_array, ext.managed_config_prefix, ext.clash_script, ext.overwrite_original_rules, ext.clash_classical_ruleset);
-        return YAML::Dump(yamlnode);
+        return quoteClashShortID(YAML::Dump(yamlnode));
     }
 
     std::string output_content = rulesetToClashStr(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
@@ -873,7 +878,7 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf
     //rulesetToClash(yamlnode, ruleset_content_array, ext.overwrite_original_rules, ext.clash_new_field_name);
     //std::string output_content = YAML::Dump(yamlnode);
 
-    return output_content;
+    return quoteClashShortID(output_content);
 }
 
 // peer = (public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, allowed-ips = "0.0.0.0/0, ::/0", endpoint = engage.cloudflareclient.com:2408, client-id = 139/184/125),(public-key = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=, endpoint = engage.cloudflareclient.com:2408)
